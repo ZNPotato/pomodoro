@@ -333,36 +333,59 @@ body{background:var(--bg);color:var(--text)}
       </div>
 
       <!-- 자동 저장 -->
-      <div class="panel" id="panel-save">
-        <div class="sec">자동 저장 설정</div>
-        <div id="browserWarn" class="warn-box" style="display:none">크롬(Chrome) 또는 엣지(Edge)에서만 폴더 지정이 가능합니다.</div>
-        <div class="card">
-          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">📁 저장 폴더 지정</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7">폴더를 지정하면 <strong>10분마다 pomodoro_data.json</strong>으로 자동 저장됩니다.</div>
-          <div class="as-step"><div class="step-n">1</div><span>저장 폴더 지정 (바탕화면 권장)</span></div>
-          <div class="as-step"><div class="step-n">2</div><span>이후 10분마다 자동 저장, 수동 저장도 가능</span></div>
-          <div class="as-step" style="margin-bottom:12px"><div class="step-n">3</div><span>다른 컴퓨터 이동 시 <strong>pomodoro_data.json</strong> 복사 → 불러오기</span></div>
-          <div class="folder-row"><span>📂</span><span class="fp" id="folderPath">저장 폴더가 지정되지 않았습니다</span></div>
-          <div style="display:flex;gap:6px">
-            <button class="btn info" onclick="pickFolder()">폴더 지정</button>
-            <button class="btn ok"  id="btnSaveNow"  style="display:none" onclick="saveNow()">지금 저장</button>
-            <button class="btn"     id="btnClearDir" style="display:none" onclick="clearFolder()">폴더 해제</button>
-          </div>
-          <div class="sub" id="lastSaved"></div>
-        </div>
-        <div class="card">
-          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">📥 파일에서 불러오기</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7"><strong>pomodoro_data.json</strong>을 선택하면 모든 기록과 카테고리가 복원됩니다.</div>
-          <button class="btn ok" onclick="document.getElementById('importFile').click()">JSON 파일 선택</button>
-          <input type="file" id="importFile" accept=".json" onchange="importData(event)"/>
-          <div class="sub" id="importInfo"></div>
-        </div>
-        <div class="card">
-          <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">🗑 데이터 초기화</div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">저장된 모든 기록을 삭제합니다. 삭제 전 저장을 먼저 하세요.</div>
-          <button class="btn bad" onclick="clearAll()">전체 데이터 삭제</button>
-        </div>
-      </div>
+      
+<div class="panel" id="panel-save">
+  <div class="sec">데이터 관리</div>
+
+  <!-- 📤 내보내기 -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">📤 데이터 내보내기</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7">
+      모든 기록을 <strong>pomodoro_data.json</strong> 파일로 내보냅니다.<br/>
+      카카오톡·메일·iCloud Drive·Google Drive 등으로 공유할 수 있어요.
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn info" onclick="exportData()">📤 내보내기 / 공유</button>
+    </div>
+    <div class="sub" id="exportInfo"></div>
+  </div>
+
+  <!-- 📥 불러오기 -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">📥 데이터 불러오기</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7">
+      카카오톡·메일·iCloud Drive 등에서 받은<br/>
+      <strong>pomodoro_data.json</strong> 파일을 선택하면 복원됩니다.
+    </div>
+    <button class="btn ok" onclick="document.getElementById('importFile').click()">📂 파일 선택해서 불러오기</button>
+    <input type="file" id="importFile" accept=".json" onchange="importData(event)"/>
+    <div class="sub" id="importInfo"></div>
+  </div>
+
+  <!-- 💾 PC 전용 자동저장 (아이폰에서는 숨김) -->
+  <div class="card" id="pcSaveCard">
+    <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">💾 자동 저장 (PC 전용)</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.7">
+      폴더를 지정하면 <strong>10분마다 자동 저장</strong>됩니다.<br/>
+      크롬·엣지 브라우저 전용 기능이에요.
+    </div>
+    <div id="browserWarn" class="warn-box" style="display:none">크롬(Chrome) 또는 엣지(Edge)에서만 폴더 지정이 가능합니다.</div>
+    <div class="folder-row"><span>📂</span><span class="fp" id="folderPath">저장 폴더가 지정되지 않았습니다</span></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn info" onclick="pickFolder()">폴더 지정</button>
+      <button class="btn ok"  id="btnSaveNow"  style="display:none" onclick="saveNow()">지금 저장</button>
+      <button class="btn"     id="btnClearDir" style="display:none" onclick="clearFolder()">폴더 해제</button>
+    </div>
+    <div class="sub" id="lastSaved"></div>
+  </div>
+
+  <!-- 🗑 초기화 -->
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:5px">🗑 데이터 초기화</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px">저장된 모든 기록을 삭제합니다. 삭제 전 내보내기를 먼저 하세요.</div>
+    <button class="btn bad" onclick="clearAll()">전체 데이터 삭제</button>
+  </div>
+</div>
 
     </div>
   </div>
