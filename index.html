@@ -911,54 +911,6 @@ function initSavePanel() {
   if (bw) bw.style.display = (!isIOS && !('showDirectoryPicker' in window)) ? 'block' : 'none';
 }
 
-// 내보내기 — 아이폰이면 Web Share API, PC면 다운로드
-
-
-async function exportData() {
-  const all = { _categories: cats };
-  allKeys().forEach(k => {
-    const r = localStorage.getItem(k);
-    if (r) all[k] = JSON.parse(r);
-  });
-  const json = JSON.stringify(all, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const d = new Date();
-  const fname = `pomodoro_data_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
-
-  // 지원 여부 알림으로 확인
-  if (!navigator.share) {
-    toast('이 브라우저는 공유가 지원되지 않아요. 파일을 다운로드합니다.');
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = fname; a.click();
-    URL.revokeObjectURL(url);
-    return;
-  }
-
-  try {
-    const file = new File([blob], fname, { type: 'application/json' });
-    await navigator.share({ title: 'Pomodoro 기록', files: [file] });
-    toast('공유 완료!');
-  } catch (e) {
-    if (e.name === 'AbortError') return;
-    // 파일 공유 실패 시 텍스트로 시도
-    try {
-      await navigator.share({ title: 'Pomodoro 기록', text: json });
-      toast('공유 완료!');
-    } catch (e2) {
-      toast('공유 실패: ' + e2.message);
-    }
-  }
-}
-
-  // PC 또는 폴백 — 파일 다운로드
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = fname; a.click();
-  URL.revokeObjectURL(url);
-  toast('파일 저장 완료!');
-  document.getElementById('exportInfo').textContent = `${allKeys().length}일치 기록 내보내기 완료`;
-}
 </script>
 </script>
 </body>
