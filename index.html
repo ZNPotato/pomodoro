@@ -645,7 +645,7 @@ function go(p){
   if(p==='hist'){renderDashboard();renderTL();renderHistPanel();}
   if(p==='cat')  renderCatMgr();
   if(p==='todo') renderCatChips();
-  if(p==='save') document.getElementById('browserWarn').style.display=('showDirectoryPicker' in window)?'none':'block';
+  if(p==='save') initSavePanel();
 }
 function goHist(key){go('hist');renderHistPanel(key)}
 
@@ -899,6 +899,58 @@ function clearAll(){
       .then(() => console.log('SW 등록 완료'))
       .catch(e => console.log('SW 등록 실패', e));
   }
+<script>
+// 아이폰 감지
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+// 패널 열릴 때 PC 전용 카드 표시 여부 결정
+function initSavePanel() {
+  const pcCard = document.getElementById('pcSaveCard');
+  if (pcCard) pcCard.style.display = isIOS ? 'none' : 'block';
+  const bw = document.getElementById('browserWarn');
+  if (bw) bw.style.display = (!isIOS && !('showDirectoryPicker' in window)) ? 'block' : 'none';
+}
+
+// 내보내기 — 아이폰이면 Web Share API, PC면 다운로드
+async function exportData() {
+  const all = { _categories: cats };
+  allKeys().forEach(k => {
+    const r = localStorage.getItem(k);
+    if (r) all[k] = JSON.parse(r);
+  });
+  const json = JSON.stringify(all, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const d = new Date();
+  const fname = `pomodoro_data_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+
+  // 아이폰 / Web Share API 지원 환경
+  if (navigator.share && navigator.canShare) {
+    const file = new File([blob], fname, { type: 'application/json' });
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'Pomodoro 기록',
+          text: '뽀모도로 기록 데이터입니다.',
+          files: [file]
+        });
+        toast('공유 완료!');
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return; // 사용자가 취소
+      }
+    }
+  }
+
+  // PC 폴백 — 파일 다운로드
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = fname; a.click();
+  URL.revokeObjectURL(url);
+  toast('파일 저장 완료!');
+  document.getElementById('exportInfo').textContent =
+    `${allKeys().length}일치 기록 내보내기 완료`;
+}
+</script>
 </script>
 </body>
 </html>
